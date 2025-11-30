@@ -15,7 +15,7 @@
 
 #include <boost/assert.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/socket_base.hpp>
 #if ! defined BOOST_ASIO_WINDOWS
     #include <boost/asio/posix/stream_descriptor.hpp>
@@ -88,7 +88,7 @@ namespace detail {
             return socket_type(res);
         }
 
-        static stream_descriptor get_stream_descriptor(boost::asio::io_service & io_service,
+        static stream_descriptor get_stream_descriptor(boost::asio::io_context & io_context,
                                                        socket_type & socket,
                                                        boost::system::error_code & ec) {
             BOOST_ASSERT_MSG(socket, "invalid socket");
@@ -100,13 +100,13 @@ namespace detail {
                 ec = make_error_code();
             else {
 #if ! defined BOOST_ASIO_WINDOWS
-                res.reset(new boost::asio::posix::stream_descriptor(io_service, handle));
+                res.reset(new boost::asio::posix::stream_descriptor(io_context, handle));
 #else
                 // Use duplicated SOCKET, because ASIO socket takes ownership over it so destroys one in dtor.
                 ::WSAPROTOCOL_INFO pi;
                 ::WSADuplicateSocket(handle, ::GetCurrentProcessId(), &pi);
                 handle = ::WSASocket(pi.iAddressFamily/*AF_INET*/, pi.iSocketType/*SOCK_STREAM*/, pi.iProtocol/*IPPROTO_TCP*/, &pi, 0, 0);
-                res.reset(new boost::asio::ip::tcp::socket(io_service, boost::asio::ip::tcp::v4(), handle));
+                res.reset(new boost::asio::ip::tcp::socket(io_context, boost::asio::ip::tcp::v4(), handle));
 #endif
             }
             return res;
@@ -269,12 +269,12 @@ namespace detail {
                          socket_type & socket,
                          flags_type flags,
                          boost::system::error_code & ec) ->
-            typename boost::enable_if<boost::has_range_const_iterator<ConstBufferSequence>, size_t>::type
+            typename boost::enable_if<boost::asio::is_const_buffer_sequence<ConstBufferSequence>, size_t>::type
         {
             size_t res = 0;
-            auto last = std::distance(std::begin(buffers), std::end(buffers)) - 1;
+            auto last = std::distance(boost::asio::buffer_sequence_begin(buffers), boost::asio::buffer_sequence_end(buffers)) - 1;
             decltype(last) index = 0u;
-            for (auto it = std::begin(buffers); it != std::end(buffers); ++it, ++index) {
+            for (auto it = boost::asio::buffer_sequence_begin(buffers); it != boost::asio::buffer_sequence_end(buffers); ++it, ++index) {
                 auto f = index == last ? flags
                                        : flags | ZMQ_SNDMORE;
                 res += send(message(*it), socket, f, ec);
@@ -301,11 +301,11 @@ namespace detail {
                             socket_type & socket,
                             flags_type flags,
                             boost::system::error_code & ec) ->
-            typename boost::enable_if<boost::has_range_const_iterator<MutableBufferSequence>, size_t>::type
+            typename boost::enable_if<boost::asio::is_mutable_buffer_sequence<MutableBufferSequence>, size_t>::type
         {
             size_t res = 0;
             message msg;
-            auto it = std::begin(buffers);
+            auto it = boost::asio::buffer_sequence_begin(buffers);
             do {
                 auto sz = receive(msg, socket, flags, ec);
                 if (ec)
@@ -318,7 +318,7 @@ namespace detail {
 
                 res += sz;
                 flags |= ZMQ_RCVMORE;
-            } while ((it != std::end(buffers)) && msg.more());
+            } while ((it != boost::asio::buffer_sequence_end(buffers)) && msg.more());
 
             if (msg.more())
                 ec = make_error_code(boost::system::errc::no_buffer_space);
@@ -373,4 +373,3 @@ namespace detail {
 } // namespace detail
 } // namespace azmq
 #endif // AZMQ_DETAIL_SOCKET_OPS_HPP__
-

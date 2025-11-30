@@ -9,8 +9,8 @@ in general, and Asio in particular.
 
 The main abstraction exposed by the library is azmq::socket which
 provides an Asio style socket interface to the underlying zeromq socket
-and interfaces with Asio's io_service().  The socket implementation
-participates in the io_service's reactor for asynchronous IO and
+and interfaces with Asio's io_context().  The socket implementation
+participates in the io_context's reactor for asynchronous IO and
 may be freely mixed with other Asio socket types (raw TCP/UDP/Serial/etc.).
 
 ## Building and installation
@@ -29,7 +29,7 @@ which supports C++11. Currently this has been tested with -
 * Microsoft Visual Studio 2013 on Windows Server 2008 R2
 
 Library dependencies are -
-* Boost 1.48 or later
+* Boost 1.68 or later
 * ZeroMQ 4.0.x
 
 Tests and example code require -
@@ -82,13 +82,13 @@ http://zeromq.org/intro:read-the-manual
 namespace asio = boost::asio;
 
 int main(int argc, char** argv) {
-    asio::io_service ios;
-    azmq::sub_socket subscriber(ios);
+    asio::io_context ioc;
+    azmq::sub_socket subscriber(ioc);
     subscriber.connect("tcp://192.168.55.112:5556");
     subscriber.connect("tcp://192.168.55.201:7721");
     subscriber.set_option(azmq::socket::subscribe("NASDAQ"));
 
-    azmq::pub_socket publisher(ios);
+    azmq::pub_socket publisher(ioc);
     publisher.bind("ipc://nasdaq-feed");
 
     std::array<char, 256> buf;

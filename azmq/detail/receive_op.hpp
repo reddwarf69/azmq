@@ -15,9 +15,9 @@
 #include "reactor_op.hpp"
 
 #include <boost/version.hpp>
-#include <boost/asio/io_service.hpp>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/executor_work_guard.hpp>
+#include <boost/asio/io_context.hpp>
 #if BOOST_VERSION >= 107900
 #include <boost/asio/recycling_allocator.hpp>
 #include <boost/asio/bind_allocator.hpp>
@@ -197,5 +197,3 @@ private:
 } // namespace detail
 } // namespace azmq
 #endif // AZMQ_DETAIL_RECEIVE_OP_HPP_
-
-
