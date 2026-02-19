@@ -18,22 +18,28 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# --- dependencies  --
-find_package(
-    Boost 1.68
-    COMPONENTS date_time
-               thread
-               chrono
-               random
-    REQUIRED)
+if(NOT PROJECT_IS_TOP_LEVEL OR AZMQ_BUILD_TESTS OR AZMQ_BUILD_DOC)
+    # --- dependencies  --
+    find_package(
+        Boost 1.68
+        COMPONENTS date_time
+                thread
+                chrono
+                random
+        REQUIRED)
 
-# Try to find Boost::system
-find_package(Boost COMPONENTS system)
+    # Try to find Boost::system
+    find_package(Boost COMPONENTS system)
 
-include(FindAzmqLibzmq.cmake)
+    include(FindAzmqLibzmq.cmake)
 
-set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-find_package(Threads REQUIRED)
+    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    find_package(Threads REQUIRED)
+else()
+    add_library(Azmq::libzmq INTERFACE IMPORTED)
+    add_library(Boost::headers INTERFACE IMPORTED)
+    add_library(Threads::Threads INTERFACE IMPORTED)
+endif()
 
 # --- create library --
 add_library(${PROJECT_NAME} INTERFACE)
