@@ -26,10 +26,9 @@ if(NOT PROJECT_IS_TOP_LEVEL OR AZMQ_BUILD_TESTS OR AZMQ_BUILD_DOC)
                 thread
                 chrono
                 random
+        OPTIONAL_COMPONENTS
+                system
         REQUIRED)
-
-    # Try to find Boost::system
-    find_package(Boost COMPONENTS system)
 
     include(FindAzmqLibzmq.cmake)
 
