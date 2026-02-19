@@ -29,9 +29,6 @@ find_package(
 
 # Try to find Boost::system
 find_package(Boost COMPONENTS system)
-if (NOT Boost_SYSTEM_FOUND)
-    message(WARNING "Boost::system not found, some examples may not compile")
-endif()
 
 include(FindAzmqLibzmq.cmake)
 
