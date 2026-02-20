@@ -32,7 +32,7 @@ if(NOT PROJECT_IS_TOP_LEVEL OR AZMQ_BUILD_TESTS OR AZMQ_BUILD_DOC)
 
     include(FindAzmqLibzmq.cmake)
 
-    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
     find_package(Threads REQUIRED)
 else()
     add_library(Azmq::libzmq INTERFACE IMPORTED)
